@@ -2,13 +2,9 @@ from PIL import Image, ImageDraw, ImageFont
 
 def create_pixel_art_text(text, output_file="hacker_pixel_art.png"):
     # Configuración de la imagen
-    font_size = 8  # Tamaño base de píxel
-    scale = 10  # Escala para agrandar la imagen
-    font_path = "arial.ttf"  # Cambia a una fuente pixel art si tienes una
-
-    # Crear una imagen temporal para calcular el tamaño del texto
-    temp_image = Image.new("RGB", (1, 1))
-    draw = ImageDraw.Draw(temp_image)
+    font_size = 10  # Tamaño de fuente para el texto pixelado
+    scale = 10  # Escala para ampliar el arte pixelado
+    font_path = "arial.ttf"  # Fuente predeterminada (puedes cambiarla a una fuente pixel art si tienes una)
 
     try:
         font = ImageFont.truetype(font_path, font_size)
@@ -16,16 +12,22 @@ def create_pixel_art_text(text, output_file="hacker_pixel_art.png"):
         print("No se encontró la fuente especificada. Usando fuente predeterminada.")
         font = ImageFont.load_default()
 
-    text_width, text_height = draw.textsize(text, font=font)
+    # Calcular el tamaño del texto
+    text_width, text_height = font.getbbox(text)[2:]  # Cambiar a getbbox para calcular correctamente
 
-    # Crear la imagen final con el tamaño adecuado
+    # Crear la imagen final con un fondo negro
     image = Image.new("RGB", (text_width * scale, text_height * scale), "black")
     draw = ImageDraw.Draw(image)
 
-    # Dibujar el texto
-    for x in range(scale):
-        for y in range(scale):
-            draw.text((x, y), text, fill="lime", font=font)
+    # Dibujar el texto escalado
+    for x in range(0, text_width):
+        for y in range(0, text_height):
+            draw.text((x * scale, y * scale), text, fill="lime", font=font)
 
+    # Guardar la imagen
+    image.save(output_file)
+    print(f"Imagen guardada como {output_file}")
 
-            image.save("out.png","d.png")
+# Ejecución del programa
+if __name__ == "__main__":
+    create_pixel_art_text("HACKER")

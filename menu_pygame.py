@@ -8,75 +8,78 @@ pygame.init()
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-pygame.display.set_caption("Game Menu")
+pygame.display.set_caption("Funny Beautiful Game Menu")
 
 # Colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (128, 128, 128)
 RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
 
 # Button class
 class Button:
-    def __init__(self, x, y, width, height, text):
+    def __init__(self, x, y, width, height, text, color, hover_color, action=None):
         self.rect = pygame.Rect(x, y, width, height)
         self.text = text
-        self.is_hovered = False
-        self.normal_color = GRAY
-        self.hover_color = RED
+        self.color = color
+        self.hover_color = hover_color
+        self.action = action
+        self.font = pygame.font.Font(None, 36)
 
-    def draw(self, surface):
-        color = self.hover_color if self.is_hovered else self.normal_color
-        pygame.draw.rect(surface, color, self.rect)
+    def draw(self, screen):
+        mouse_pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(mouse_pos):
+            pygame.draw.rect(screen, self.hover_color, self.rect)
+        else:
+            pygame.draw.rect(screen, self.color, self.rect)
         
-        # Button text
-        font = pygame.font.Font(None, 36)
-        text = font.render(self.text, True, WHITE)
-        text_rect = text.get_rect(center=self.rect.center)
-        surface.blit(text, text_rect)
+        text_surf = self.font.render(self.text, True, BLACK)
+        text_rect = text_surf.get_rect(center=self.rect.center)
+        screen.blit(text_surf, text_rect)
 
-    def handle_event(self, event):
-        if event.type == pygame.MOUSEMOTION:
-            self.is_hovered = self.rect.collidepoint(event.pos)
+    def is_clicked(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.rect.collidepoint(event.pos):
+                if self.action:
+                    self.action()
+
+def start_game():
+    print("Game Started!")
+
+def show_options():
+    print("Options Shown!")
+
+def quit_game():
+    pygame.quit()
+    sys.exit()
+
+def main_menu():
+    buttons = [
+        Button(300, 200, 200, 50, "Start Game", GREEN, BLUE, start_game),
+        Button(300, 300, 200, 50, "Options", GREEN, BLUE, show_options),
+        Button(300, 400, 200, 50, "Quit", GREEN, BLUE, quit_game)
+    ]
+
+    running = True
+    while running:
+        screen.fill(WHITE)
         
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if self.is_hovered:
-                return True
-        return False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            for button in buttons:
+                if button.is_clicked(event):
+                    button.action()
 
-# Create buttons
-start_button = Button(WINDOW_WIDTH//2 - 100, 250, 200, 50, "Start")
-quit_button = Button(WINDOW_WIDTH//2 - 100, 350, 200, 50, "Quit")
+        for button in buttons:
+            button.draw(screen)
 
-# Game loop
-running = True
-while running:
-    screen.fill(BLACK)
-    
-    # Draw title
-    font = pygame.font.Font(None, 74)
-    title = font.render("Main Menu", True, WHITE)
-    title_rect = title.get_rect(center=(WINDOW_WIDTH//2, 100))
-    screen.blit(title, title_rect)
-    
-    # Draw buttons
-    start_button.draw(screen)
-    quit_button.draw(screen)
-    
-    # Event handling
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        
-        if start_button.handle_event(event):
-            print("Start button clicked!")
-            # Add your game start logic here
-        
-        if quit_button.handle_event(event):
-            running = False
-    
-    pygame.display.flip()
+        pygame.display.flip()
 
-pygame.quit()
-sys.exit()
+    pygame.quit()
+    sys.exit()
 
+if __name__ == "__main__":
+    main_menu()
